@@ -1,13 +1,13 @@
 # 编译器设置
 CC = riscv64-unknown-elf-gcc
-CFLAGS = -march=rv32imac -mabi=ilp32 -mcmodel=medany -ffreestanding -O0 -g -Wall
+CFLAGS = -march=rv32imac_zicsr -mabi=ilp32 -mcmodel=medany -ffreestanding -O0 -g -Wall
 
 # 模拟器设置
 QEMU = qemu-system-riscv32
 QEMU_FLAGS = -nographic -machine virt -bios none -kernel kernel.elf
 
 # 目标文件
-OBJS = entry.o kernel.o switch.o
+OBJS = entry.o kernel.o switch.o trap.o
 
 # 默认动作：编译并运行
 all: run
