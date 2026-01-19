@@ -4,18 +4,7 @@
 #define UART0_DR   ((volatile unsigned char *)0x10000000)
 #define CLINT_MTIMECMP (volatile uint64_t *)0x2004000
 #define CLINT_MTIME    (volatile uint64_t *)0x200bff8
-
-// ---------------- 变量定义 ----------------
-#define STACK_SIZE 1024
-struct task task_a = {0, "Task A"};
-struct task task_b = {0, "Task B"};
-uint32_t stack_a[STACK_SIZE];
-uint32_t stack_b[STACK_SIZE];
-
-struct task *current_task = &task_a;
-struct task *next_task = &task_b;
-
-// 定义全局锁
+// 全局锁
 struct spinlock uart_lock;
 
 // ---------------- 辅助函数 ----------------
@@ -30,61 +19,65 @@ void enable_interrupts() {
     asm volatile("csrw mstatus, %0" : : "r" (mstatus));
 }
 
-void safe_print(char *s) {
-    // 上锁
+// 安全打印函数
+void slow_safe_print(char *s) {
     spin_lock(&uart_lock);
     while (*s) {
         uart_putc(*s++);
-        delay(10000000); 
+        delay(1000000); 
     }
     uart_putc('\n');
-
-    // 解锁
     spin_unlock(&uart_lock);
 }
 
-// ---------------- 任务初始化 ----------------
-void task_init(struct task *t, void (*entry)(), uint32_t *stack) {
-    t->sp = &stack[STACK_SIZE];
-    t->sp -= 14; 
-    t->sp[13] = (uint32_t)entry; 
-}
-
-// ---------------- 任务逻辑 ----------------
+// ---------------- 任务函数 ----------------
 void task_a_entry() {
-    enable_interrupts(); 
+    enable_interrupts();
     while (1) {
-        safe_print("Task A: I am writing a very long report...");
-        delay(100000000); 
+        slow_safe_print("Task A: Managing Smart Home...");
+        delay(5000000);
     }
 }
 
 void task_b_entry() {
     enable_interrupts();
     while (1) {
-        safe_print("Task B: I am checking all the sensors...");
-        delay(100000000);
+        slow_safe_print("Task B: Reading Sensors...");
+        delay(5000000);
     }
 }
 
-// ---------------- 硬件初始化 ----------------
+void task_c_entry() {
+    enable_interrupts();
+    while (1) {
+        slow_safe_print("Task C: Connecting to Cloud...");
+        delay(5000000);
+    }
+}
+
 void timer_init() {
     *CLINT_MTIMECMP = *CLINT_MTIME + 100000;
 }
 
+// ---------------- Main ----------------
 void main() {
-    // 初始化锁
     extern void spin_init(struct spinlock *lk, char *name);
     spin_init(&uart_lock, "uart");
 
     uart_puts("OS: Booting...\n");
+    
+    // 1. 初始化任务系统
+    task_os_init();
 
-    task_init(&task_a, task_a_entry, stack_a);
-    task_init(&task_b, task_b_entry, stack_b);
+    // 2. 创建 3 个任务
+    task_create(task_a_entry, "TaskA");
+    task_create(task_b_entry, "TaskB");
+    task_create(task_c_entry, "TaskC");
 
+    // 3. 硬件初始化
+    timer_init();
     extern void trap_entry();
     asm volatile("csrw mtvec, %0" : : "r" ((uint32_t)trap_entry));
-    timer_init();
     
     uint32_t mie;
     asm volatile("csrr %0, mie" : "=r" (mie));
@@ -93,10 +86,14 @@ void main() {
 
     enable_interrupts();
 
-    uart_puts("OS: Starting Lock Demo...\n");
+    uart_puts("OS: Scheduler Initialized. Starting...\n");
 
+    // 启动调度器！
+    current_task = &tasks[0];
+    tasks[0].state = TASK_RUNNING;
+    
     uint32_t *tmp_sp;
-    switch_to(&tmp_sp, task_a.sp); 
+    switch_to(&tmp_sp, tasks[0].sp);
 
-    while(1) {} 
+    while(1) {} // Should not reach here
 }

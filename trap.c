@@ -5,19 +5,13 @@
 #define CAUSE_MACHINE_TIMER_INTERRUPT 0x80000007
 
 void timer_handler() {
-    *CLINT_MTIMECMP = *CLINT_MTIME + 10000000;
+    *CLINT_MTIMECMP = *CLINT_MTIME + 100000; // 0.01s
 }
 
 void trap_handler(uintptr_t mcause, uintptr_t mepc) {
     if (mcause == CAUSE_MACHINE_TIMER_INTERRUPT) {
         timer_handler();
-        struct task *prev = current_task;
-        struct task *next = next_task;
-        current_task = next;
-        next_task = prev;
-
-        uart_puts("\n[!] Timer Interrupt: Switching Task...\n"); 
-
-        switch_to(&prev->sp, next->sp);
+        
+        task_yield();
     }
 }
