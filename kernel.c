@@ -5,7 +5,7 @@
 #define CLINT_MTIMECMP (volatile uint64_t *)0x2004000
 #define CLINT_MTIME    (volatile uint64_t *)0x200bff8
 
-// ---------------- 变量实体定义 ----------------
+// ---------------- 变量定义 ----------------
 #define STACK_SIZE 1024
 struct task task_a = {0, "Task A"};
 struct task task_b = {0, "Task B"};
@@ -15,17 +15,32 @@ uint32_t stack_b[STACK_SIZE];
 struct task *current_task = &task_a;
 struct task *next_task = &task_b;
 
+// 定义全局锁
+struct spinlock uart_lock;
+
 // ---------------- 辅助函数 ----------------
 void uart_putc(char c) { *UART0_DR = c; }
 void uart_puts(char *s) { while (*s) uart_putc(*s++); }
 void delay(volatile int count) { while (count--) {} }
 
-// 开启机器模式全局中断
 void enable_interrupts() {
     uint32_t mstatus;
     asm volatile("csrr %0, mstatus" : "=r" (mstatus));
     mstatus |= 0x8; 
     asm volatile("csrw mstatus, %0" : : "r" (mstatus));
+}
+
+void safe_print(char *s) {
+    // 上锁
+    spin_lock(&uart_lock);
+    while (*s) {
+        uart_putc(*s++);
+        delay(10000000); 
+    }
+    uart_putc('\n');
+
+    // 解锁
+    spin_unlock(&uart_lock);
 }
 
 // ---------------- 任务初始化 ----------------
@@ -37,27 +52,31 @@ void task_init(struct task *t, void (*entry)(), uint32_t *stack) {
 
 // ---------------- 任务逻辑 ----------------
 void task_a_entry() {
-    enable_interrupts(); // 关键修正：新任务启动时要开中断
+    enable_interrupts(); 
     while (1) {
-        uart_puts("A");
-        delay(10000000);
+        safe_print("Task A: I am writing a very long report...");
+        delay(100000000); 
     }
 }
 
 void task_b_entry() {
-    enable_interrupts(); // 关键修正
+    enable_interrupts();
     while (1) {
-        uart_puts("B");
-        delay(10000000);
+        safe_print("Task B: I am checking all the sensors...");
+        delay(100000000);
     }
 }
 
 // ---------------- 硬件初始化 ----------------
 void timer_init() {
-    *CLINT_MTIMECMP = *CLINT_MTIME + 1000000; 
+    *CLINT_MTIMECMP = *CLINT_MTIME + 100000;
 }
 
 void main() {
+    // 初始化锁
+    extern void spin_init(struct spinlock *lk, char *name);
+    spin_init(&uart_lock, "uart");
+
     uart_puts("OS: Booting...\n");
 
     task_init(&task_a, task_a_entry, stack_a);
@@ -65,21 +84,18 @@ void main() {
 
     extern void trap_entry();
     asm volatile("csrw mtvec, %0" : : "r" ((uint32_t)trap_entry));
-
     timer_init();
     
-    // 开启定时器中断位 (MTIE)
     uint32_t mie;
     asm volatile("csrr %0, mie" : "=r" (mie));
     mie |= 0x80;
     asm volatile("csrw mie, %0" : : "r" (mie));
 
-    // main 函数自己也要开全局中断，否则第一个任务A启动前中断就被封死了
     enable_interrupts();
 
-    uart_puts("OS: Interrupts Enabled. Starting Multitasking...\n");
+    uart_puts("OS: Starting Lock Demo...\n");
 
-    uint32_t tmp_sp;
+    uint32_t *tmp_sp;
     switch_to(&tmp_sp, task_a.sp); 
 
     while(1) {} 

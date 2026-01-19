@@ -4,10 +4,10 @@ CFLAGS = -march=rv32imac_zicsr -mabi=ilp32 -mcmodel=medany -ffreestanding -O0 -g
 
 # 模拟器设置
 QEMU = qemu-system-riscv32
-QEMU_FLAGS = -nographic -machine virt -bios none -kernel kernel.elf
+QEMU_FLAGS = -nographic -machine virt -bios none -kernel kernel.elf 
 
 # 目标文件
-OBJS = entry.o kernel.o switch.o trap.o
+OBJS = entry.o kernel.o switch.o trap.o lock.o
 
 # 默认动作：编译并运行
 all: run
