@@ -22,16 +22,26 @@ struct task {
     uint32_t stack[STACK_SIZE]; // 任务专属栈 
 };
 
+// ---------------- CPU 结构体 ----------------
+// 用于记录每个 CPU 的私有状态
+struct cpu {
+    int noff;       // 关中断的嵌套深度 (Nesting OFFset)
+    int int_ena;    // 关中断之前的状态 (Interrupt ENAble)
+};
+
 // ---------------- 锁结构体 ----------------
 struct spinlock {
     int locked;
     char *name;
+    struct cpu *cpu;
 };
 
 // ---------------- 外部变量与函数 ----------------
 extern struct task *current_task;
 extern struct task tasks[MAX_TASKS];
 extern struct spinlock uart_lock;
+struct cpu* mycpu();
+
 
 // 任务管理函数
 void task_os_init();
@@ -41,6 +51,8 @@ void schedule();
 
 // 其他辅助函数
 void uart_puts(char *s);
+void push_off(void);
+void pop_off(void);
 void uart_putc(char c);
 void delay(volatile int count);
 void spin_init(struct spinlock *lk, char *name);
