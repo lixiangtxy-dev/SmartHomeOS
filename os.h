@@ -6,6 +6,11 @@
 // ---------------- 配置参数 ----------------
 #define MAX_TASKS 10       // 最大支持 10 个任务
 #define STACK_SIZE 1024    // 每个任务 1024 个 uint32 (4KB)
+#define PHYSTOP 0x88000000 // 物理内存顶端 (128MB)
+#define PGSIZE 4096        // 页大小 4KB
+
+#define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
+#define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))
 
 // ---------------- 任务状态 ----------------
 typedef enum {
@@ -42,6 +47,9 @@ extern struct task tasks[MAX_TASKS];
 extern struct spinlock uart_lock;
 struct cpu* mycpu();
 
+void kinit(void);
+void *kalloc(void);
+void kfree(void *pa);
 
 // 任务管理函数
 void task_os_init();

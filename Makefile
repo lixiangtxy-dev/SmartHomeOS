@@ -7,7 +7,7 @@ QEMU = qemu-system-riscv32
 QEMU_FLAGS = -nographic -machine virt -bios none -kernel kernel.elf 
 
 # 目标文件
-OBJS = entry.o kernel.o switch.o trap.o lock.o task.o
+OBJS = entry.o kernel.o switch.o trap.o lock.o task.o mm.c
 
 # 默认动作：编译并运行
 all: run

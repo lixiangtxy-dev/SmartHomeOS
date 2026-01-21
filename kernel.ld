@@ -20,4 +20,5 @@ SECTIONS
     .bss : {
         *(.bss)
     }
+    PROVIDE(end = .);
 }
