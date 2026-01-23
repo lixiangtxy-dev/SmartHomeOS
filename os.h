@@ -2,7 +2,7 @@
 #define __OS_H__
 
 #include <stdint.h>
-
+#include <stddef.h>
 // ---------------- 配置参数 ----------------
 #define MAX_TASKS 10       // 最大支持 10 个任务
 #define STACK_SIZE 1024    // 每个任务 1024 个 uint32 (4KB)
@@ -12,6 +12,31 @@
 #define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
 #define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))
 
+#define HEAP_STOP  0x87000000 
+#define RAMDISK_START 0x87000000
+#define RAMDISK_SIZE  (4 * 1024 * 1024) // 4MB
+
+// ---------------- 文件系统定义 ----------------
+#define FS_BLOCK_SIZE 4096  // 块大小 (和页大小一致，方便)
+#define FS_MAGIC      0x5A5A5A5A
+// 文件类型
+#define T_DIR  1
+#define T_FILE 2
+
+// 简易打开模式
+#define O_READ  0
+#define O_WRITE 1
+#define O_CREATE 2
+
+// 函数声明
+void fs_init();
+void fs_test();
+int fs_open(char *name, int mode);
+int fs_write(int inode_idx, char *buf, int n);
+int fs_read(int inode_idx, char *buf, int n);
+void fs_close(int inode_idx);
+void fs_ls();
+void *memcpy(void *dst, const void *src, size_t n);
 // ---------------- 任务状态 ----------------
 typedef enum {
     TASK_UNUSED = 0, // 空闲槽位

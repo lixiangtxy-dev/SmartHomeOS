@@ -16,14 +16,9 @@ void kinit() {
     spin_init(&kmem.lock, "kmem");
     kmem.freelist = 0;
     
-    void *stack_top = (void*)PHYSTOP;
-    void *stack_bottom = (void*)((char*)stack_top - 64*1024); // 保留 64KB
-
-    // 从内核结束位置开始释放
     char *p = (char *)PGROUNDUP((uintptr_t)end);
     
-    //只释放到 stack_bottom 之前
-    for (; p + PGSIZE <= (char *)stack_bottom; p += PGSIZE) {
+    for (; p + PGSIZE <= (char *)HEAP_STOP; p += PGSIZE) {
         kfree(p);
     }
 }

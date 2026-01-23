@@ -17,6 +17,15 @@ void uart_putc(char c) { *UART0_DR = c; }
 void uart_puts(char *s) { while (*s) uart_putc(*s++); }
 void delay(volatile int count) { while (count--) {} }
 
+void *memcpy(void *dst, const void *src, size_t n) {
+    char *d = (char *)dst;
+    const char *s = (const char *)src;
+    while (n--) {
+        *d++ = *s++;
+    }
+    return dst;
+}
+
 void enable_interrupts() {
     uint32_t mstatus;
     asm volatile("csrr %0, mstatus" : "=r" (mstatus));
@@ -76,16 +85,31 @@ void main() {
     
     kinit(); 
     uart_puts("OS: Memory Initialized.\n");
-    
-    // 简单的 kalloc 测试
-    void *p = kalloc();
-    if(p) {
-        uart_puts("OS: kalloc test passed (Allocated Page)\n");
-        kfree(p);
-    } else {
-        uart_puts("PANIC: kalloc failed!\n");
-        while(1);
+
+    fs_init(); // 初始化或格式化
+
+    // 创建并写入文件
+    uart_puts("FS: Creating 'sensor.log'...\n");
+    int fd = fs_open("sensor.log", O_CREATE);
+    if(fd > 0) {
+        char *msg = "Temp: 25C, Humidity: 40%";
+        fs_write(fd, msg, 24);
+        uart_puts("FS: Write Done.\n");
     }
+
+    // 列出文件
+    fs_ls();
+
+    // 读取文件验证
+    char buf[100];
+    int fd_read = fs_open("sensor.log", 0);
+    if(fd_read > 0) {
+        fs_read(fd_read, buf, 100);
+        uart_puts("FS: Read content: ");
+        uart_puts(buf);
+        uart_puts("\n");
+    }
+
     // 1. 初始化任务系统
     task_os_init();
 
