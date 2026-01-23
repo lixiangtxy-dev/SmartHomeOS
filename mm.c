@@ -22,7 +22,7 @@ void kinit() {
     // 从内核结束位置开始释放
     char *p = (char *)PGROUNDUP((uintptr_t)end);
     
-    // 【关键修改】循环条件改为：只释放到 stack_bottom 之前
+    //只释放到 stack_bottom 之前
     for (; p + PGSIZE <= (char *)stack_bottom; p += PGSIZE) {
         kfree(p);
     }
@@ -65,7 +65,8 @@ void *kalloc(void) {
     spin_unlock(&kmem.lock);
 
     if (r) {
-        // 分配出去前清零内存 (这也是个好习惯，防止读到旧数据)
+        // 分配出去前清零内存 (防止读到旧数据)
+        uart_puts("kalloc: allocated a page\n");
         char *p = (char*)r;
         for(int i=0; i<PGSIZE; i++)
             p[i] = 0;

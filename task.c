@@ -8,6 +8,7 @@ struct task *current_task = 0;
 void task_os_init() {
     for (int i = 0; i < MAX_TASKS; i++) {
         tasks[i].state = TASK_UNUSED;
+        tasks[i].stack = 0;
     }
 }
 
@@ -25,7 +26,14 @@ int task_create(void (*entry)(), char *name) {
     if (i == MAX_TASKS) return -1;
 
     struct task *t = &tasks[i];
-    t->sp = &t->stack[STACK_SIZE]; 
+    t->stack = kalloc();
+    if(t->stack == 0){
+        uart_puts("PANIC: task_create kalloc failed!\n");
+        return -1;
+    }
+    uint32_t *stack_top = (uint32_t *)((char *)t->stack + PGSIZE);
+
+    t->sp = stack_top; 
     t->sp -= 14; 
     t->sp[13] = (uint32_t)entry;
 

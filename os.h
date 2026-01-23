@@ -24,7 +24,7 @@ struct task {
     uint32_t *sp;               // 栈指针
     task_state_t state;         // 任务状态
     char name[16];              // 任务名
-    uint32_t stack[STACK_SIZE]; // 任务专属栈 
+    void *stack; // 任务专属栈 
 };
 
 // ---------------- CPU 结构体 ----------------
