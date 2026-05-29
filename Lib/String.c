@@ -83,3 +83,34 @@ char *strcpy(char *dest, const char *src) {
     }
     return dest;
 }
+
+// lib/string.c 中新增:
+
+// 字符串拼接
+char *strcat(char *dest, const char *src) {
+    char *d = dest;
+    while (*d) d++; // 找到 dest 的末尾
+    while ((*d++ = *src++) != '\0'); // 追加 src
+    return dest;
+}
+
+// 整数转字符串 (Integer to ASCII)
+void itoa(int n, char s[]) {
+    int i = 0, sign;
+    if ((sign = n) < 0) n = -n; // 记录符号并转正
+    
+    // 从低位到高位提取数字
+    do {
+        s[i++] = n % 10 + '0';
+    } while ((n /= 10) > 0);
+    
+    if (sign < 0) s[i++] = '-';
+    s[i] = '\0';
+    
+    // 反转字符串
+    for (int j = 0, k = i - 1; j < k; j++, k--) {
+        char temp = s[j];
+        s[j] = s[k];
+        s[k] = temp;
+    }
+}

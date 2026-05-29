@@ -16,5 +16,6 @@ char *strchr(const char *s, int c);
 size_t strcspn(const char *s1, const char *s2);
 size_t strspn(const char *s1, const char *s2);
 char *strcpy(char *dest, const char *src);
-
+char *strcat(char *dest, const char *src);
+void itoa(int n, char s[]);
 #endif
