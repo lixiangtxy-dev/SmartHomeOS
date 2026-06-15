@@ -1,0 +1,7 @@
+*.o
+*.d
+*.elf
+*.bin
+*.log
+.vscode/
+.vscode-server/
