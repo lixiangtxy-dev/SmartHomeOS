@@ -8,6 +8,7 @@ C_SRCS += \
 ../User/ch32v30x_it.c \
 ../User/main.c \
 ../User/mempool.c \
+../User/mutex.c \
 ../User/system_ch32v30x.c \
 ../User/task.c 
 
@@ -15,6 +16,7 @@ C_DEPS += \
 ./User/ch32v30x_it.d \
 ./User/main.d \
 ./User/mempool.d \
+./User/mutex.d \
 ./User/system_ch32v30x.d \
 ./User/task.d 
 
@@ -28,6 +30,7 @@ OBJS += \
 ./User/ch32v30x_it.o \
 ./User/main.o \
 ./User/mempool.o \
+./User/mutex.o \
 ./User/switch.o \
 ./User/system_ch32v30x.o \
 ./User/task.o 
