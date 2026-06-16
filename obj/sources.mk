@@ -29,6 +29,8 @@ CALLGRAPH_DOT := callgraph.dot \
 SUBDIRS := \
 Core \
 Debug \
+OS_Core \
+OS_HAL \
 Peripheral/src \
 Startup \
 User \

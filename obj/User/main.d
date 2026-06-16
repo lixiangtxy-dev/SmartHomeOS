@@ -28,7 +28,10 @@ User/main.o: ../User/main.c \
  c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Peripheral/inc/ch32v30x_wwdg.h \
  c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/User/ch32v30x_it.h \
  c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Peripheral/inc/ch32v30x_misc.h \
- ../User/task.h ../User/mempool.h ../User/mutex.h
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/task.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/mempool.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_HAL/hal_adc.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_HAL/hal_gpio.h
 
 c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Debug/debug.h:
 
@@ -88,8 +91,10 @@ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/User/ch32v30x
 
 c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Peripheral/inc/ch32v30x_misc.h:
 
-../User/task.h:
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/task.h:
 
-../User/mempool.h:
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/mempool.h:
 
-../User/mutex.h:
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_HAL/hal_adc.h:
+
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_HAL/hal_gpio.h:
