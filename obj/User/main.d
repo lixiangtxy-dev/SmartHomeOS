@@ -30,8 +30,12 @@ User/main.o: ../User/main.c \
  c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Peripheral/inc/ch32v30x_misc.h \
  c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/task.h \
  c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/mempool.h \
- c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_HAL/hal_adc.h \
- c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_HAL/hal_gpio.h
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/device.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Drivers/drv_smarthome.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/msgqueue.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/mutex.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/shadow.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/timer.h
 
 c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Debug/debug.h:
 
@@ -95,6 +99,14 @@ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/task.
 
 c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/mempool.h:
 
-c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_HAL/hal_adc.h:
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/device.h:
 
-c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_HAL/hal_gpio.h:
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Drivers/drv_smarthome.h:
+
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/msgqueue.h:
+
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/mutex.h:
+
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/shadow.h:
+
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/timer.h:

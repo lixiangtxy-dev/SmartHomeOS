@@ -1,166 +1,162 @@
 #include "debug.h"
 #include "task.h"
 #include "mempool.h"
-#include "hal_adc.h"   // 引入 ADC 硬件抽象层
-#include "hal_gpio.h"  // 引入 GPIO 硬件抽象层
-#include <math.h>
-
-// ==========================================
-// BSP (Board Support Package) 硬件配方表
-// ==========================================
-
-// 定义光敏传感器的硬件信息 (PC1)
-const adc_hw_config_t light_sensor_hw = {
-    .rcc_gpio_clock = RCC_APB2Periph_GPIOC,
-    .gpio_port      = GPIOC,
-    .gpio_pin       = GPIO_Pin_1,
-    .adc_channel    = 11
-};
-
-// 定义热敏传感器的硬件信息 (PC2)
-const adc_hw_config_t temp_sensor_hw = {
-    .rcc_gpio_clock = RCC_APB2Periph_GPIOC,
-    .gpio_port      = GPIOC,
-    .gpio_pin       = GPIO_Pin_2,
-    .adc_channel    = 12
-};
-
-// ==========================================
-// BSP 硬件配方表新增：报警 LED
-// ==========================================
-const gpio_hw_config_t alarm_led_hw = {
-    .rcc_gpio_clock = RCC_APB2Periph_GPIOC,
-    .gpio_port      = GPIOC,
-    .gpio_pin       = GPIO_Pin_3,
-    .gpio_mode      = GPIO_Mode_Out_PP,
-    .active_level   = 0   // 【重点】告诉底层：我的开发板是低电平点亮！
-};
-// ==========================================
-
-// NTC 热敏电阻的物理参数
-#define NTC_R25       10000.0f  
-#define NTC_B_VALUE   3950.0f   
-#define SERIES_R      10000.0f  
+#include "device.h"        // 引入 OS 设备管理中枢
+#include "drv_smarthome.h" // 引入底层驱动初始化入口
+#include "msgqueue.h"
+#include "shadow.h"
+#include "timer.h"         // 引入软件定时器机制
 
 // 任务控制块
 task_t task1;
 task_t task2;
 task_t task3;
 
-// 全局温度共享变量
-volatile float g_current_temp = 0.0f;
+// 声明消息队列（留作后续扩展使用）
+os_mq_t temp_msg_queue;
+float temp_queue_buffer[5];
 
-/**
- * @brief 将 ADC 刻度值转换为摄氏度
- */
-float Convert_ADC_To_Celsius(uint16_t adc_raw) {
-    if (adc_raw == 0) return -273.15f; 
-    if (adc_raw == 4095) return 999.0f; 
+// ==========================================================
+// 【核心新增】：软件定时器控制块与回调函数
+// ==========================================================
+os_timer_t led_auto_off_timer;
 
-    float current_R = SERIES_R * ((float)adc_raw / (4095.0f - (float)adc_raw));
-    float temp_kelvin = 1.0f / ( (1.0f / 298.15f) + (1.0f / NTC_B_VALUE) * log(current_R / NTC_R25) );
-    return temp_kelvin - 273.15f;
+// 定时器到期后的回调函数（由 TIM2 硬件中断在后台自动调用）
+void led_auto_off_callback(void *parameter) {
+    os_device_t *led_dev = (os_device_t *)parameter;
+    uint8_t cmd_off = 0;
+    
+    if (led_dev != NULL) {
+        os_device_write(led_dev, &cmd_off, sizeof(uint8_t)); // 物理关灯
+        os_shadow_update_led(0);                             // 同步影子状态
+        printf(">>> [定时器异步事件] 3秒时间到！已自动关闭临时警报灯。 <<<\r\n");
+    }
 }
+// ==========================================================
 
-// --- 任务 1：热敏传感器采集 ---
+
+// --- 任务 1：温度采集 ---
 void task1_entry(void) {
-    u16 adc_value;
-    float current_temp_c;
+    os_device_t *temp_dev = os_device_open("sensor_temp");
+    float current_temp = 0.0f;
 
     while(1) {
-        // 【巨变1】：直接调 HAL 接口读取数据，底层自动排队，无需手动管理互斥锁！
-        adc_value = os_hal_adc_read(temp_sensor_hw.adc_channel); 
+        if (temp_dev != NULL) {
+            os_device_read(temp_dev, &current_temp, sizeof(float));
+            os_shadow_update_temp(current_temp); 
+            
+            int temp_int = (int)current_temp; 
+            int temp_frac = (int)((current_temp - temp_int) * 100); 
+            if (temp_frac < 0) temp_frac = -temp_frac;
+            printf("[Task 1] 物理温度更新至影子: %d.%02d ℃\r\n", temp_int, temp_frac);
+        }
         
-        current_temp_c = Convert_ADC_To_Celsius(adc_value);
-        g_current_temp = current_temp_c; 
-        
-        int temp_int = (int)current_temp_c; 
-        int temp_frac = (int)((current_temp_c - temp_int) * 100); 
-        if (temp_frac < 0) temp_frac = -temp_frac; 
-        
-        printf("[Task 1] 室内温度(PC2): %d.%02d ℃ (ADC: %04d)\r\n", temp_int, temp_frac, adc_value);
-        
-        Delay_Ms(500); 
-        task_yield(); 
+        // 【巨变】：使用 OS 级无阻塞延时，主动交出 CPU！
+        os_delay(500); 
     }
 }
 
-// --- 任务 2：光敏传感器采集 ---
+// --- 任务 2：光照采集 ---
 void task2_entry(void) {
-    u16 adc_value;
-    u32 voltage_mv;
+    os_device_t *light_dev = os_device_open("sensor_light");
+    uint32_t voltage_mv = 0;
 
     while(1) {
-        // 【巨变2】：无脑读取即可，不怕和任务1抢夺硬件
-        adc_value = os_hal_adc_read(light_sensor_hw.adc_channel); 
-        voltage_mv = (adc_value * 3300) / 4096;
+        if (light_dev != NULL) {
+            os_device_read(light_dev, &voltage_mv, sizeof(uint32_t));
+            printf("[Task 2] 光敏传感电压=%d mV\r\n", voltage_mv);
+        }
         
-        printf("[Task 2] 光敏传感(PC1): ADC=%04d, 电压=%d mV\r\n", adc_value, voltage_mv);
-        
-        Delay_Ms(500); 
-        task_yield(); 
+        os_delay(500); // 无阻塞延时
     }
 }
-
-// --- 任务 3：温度报警控制任务 ---
+// --- 任务 3：报警联动控制 (引入状态锁机制) ---
 void task3_entry(void) {
-    static uint8_t led_is_on = 0; 
+    os_device_t *led_dev = os_device_open("alarm_led");
+    smarthome_shadow_t local_shadow; 
+
+    // 【核心新增】：报警状态锁 (State Machine Flag)
+    // 0 = 正常监控待命
+    // 1 = 已触发过报警，正在静音或等待温度回落
+    uint8_t alarm_lock = 0; 
+
+    // 初始化软件定时器：单次触发，3000ms
+    os_timer_init(&led_auto_off_timer, "led_auto_off", led_auto_off_callback, (void*)led_dev, 3000, OS_TIMER_FLAG_ONE_SHOT);
 
     while(1) {
-        float temp = g_current_temp;
+        os_shadow_get_snapshot(&local_shadow);
+        float current_temp = local_shadow.room_temp;
 
-        if (temp > 28.0f && led_is_on == 0) {
-            // 【终极进化】：直接传对象指针和语义指令！底层会自动翻译成 ResetBits
-            os_hal_gpio_set(&alarm_led_hw, OS_GPIO_ON); 
-            led_is_on = 1;
-            printf(">>> [Task 3] 警告: 温度达到 %d ℃, 报警 LED 已点亮！ <<<\r\n", (int)temp);
+        // 【状态 1】：检测到超温，且当前没有“上锁”
+        if (current_temp > 28.0f && alarm_lock == 0) {
+            uint8_t cmd_on = 1;
+            if (led_dev) os_device_write(led_dev, &cmd_on, sizeof(uint8_t)); 
+            os_shadow_update_led(1);
+            
+            printf(">>> [Task 3 决策] 检测到超温！立刻开启警报，3秒后自动静音... <<<\r\n");
+            
+            // 启动定时器（3秒后在中断里自动关灯）
+            os_timer_start(&led_auto_off_timer);
+            
+            // 【关键】：立刻上锁！只要温度降不下来，这把锁就永远不解开，彻底杜绝重复报警！
+            alarm_lock = 1;
         }
-        else if (temp <= 28.0f && led_is_on == 1) {
-            os_hal_gpio_set(&alarm_led_hw, OS_GPIO_OFF); 
-            led_is_on = 0;
-            printf(">>> [Task 3] 恢复: 温度降至 %d ℃, 报警 LED 已关闭。 <<<\r\n", (int)temp);
+        // 【状态 2】：温度终于降回 28 度及以下，且系统处于“上锁”状态
+        else if (current_temp <= 28.0f && alarm_lock == 1) {
+            
+            // （防御性编程）如果温度降得太快，3秒时间还没到，灯还没被定时器关掉，我们就顺手把它关了
+            if (local_shadow.alarm_led_state == 1) {
+                uint8_t cmd_off = 0;
+                if (led_dev) os_device_write(led_dev, &cmd_off, sizeof(uint8_t)); 
+                os_shadow_update_led(0);
+                
+                // 停止可能还在后台运行的定时器（防止其乱触发）
+                os_timer_stop(&led_auto_off_timer); 
+            }
+
+            // 【关键】：开锁！系统恢复到待命状态，准备迎接下一次真正的高温
+            alarm_lock = 0;
+            printf(">>> [Task 3 决策] 温度已彻底恢复正常，警报系统重置待命。 <<<\r\n");
         }
 
-        Delay_Ms(200); 
-        task_yield(); 
+        os_delay(200); 
     }
 }
 
 int main(void)
 {
-    // 系统级硬件初始化
+    // 基础时钟与外设初始化
     SystemCoreClockUpdate();
-    Delay_Init();
+    Delay_Init(); // 原厂延时只在开机初始化时使用
     USART_Printf_Init(115200);      
-    printf("系统启动中...\r\n");
+    printf("\r\n================================\r\n");
+    printf("     SmartHomeOS 启动中...      \r\n");
+    printf("================================\r\n");
 
-    // ===================================================
-    // 1. 初始化 OS HAL 层
-    // ===================================================
-    os_hal_adc_core_init();                           // 1.1 开启 ADC 核心与时钟 (内部包含了 mutex 初始化)
-    os_hal_adc_channel_init(&light_sensor_hw);        // 1.2 挂载光敏引脚
-    os_hal_adc_channel_init(&temp_sensor_hw);         // 1.3 挂载热敏引脚
-    os_hal_gpio_init(&alarm_led_hw);                  // 1.4 初始化报警指示灯
-
-    // 2. 初始化内存池并分配任务
-    stack_pool_init();
+    os_shadow_init();
+    drv_smarthome_init();
+    printf("硬件驱动与设备节点挂载完成。\r\n");
     
-    uint32_t *stack1_ptr = (uint32_t*)stack_pool_alloc();
-    task_init(&task1, task1_entry, stack1_ptr, TASK_STACK_SIZE_BYTES / 4);
+    // 开启 TIM2 提供 1ms 的 OS 硬件心跳
+    os_tick_hardware_init();
+    
+    stack_pool_init();
+    os_mq_init(&temp_msg_queue, temp_queue_buffer, sizeof(float), 5);
 
-    uint32_t *stack2_ptr = (uint32_t*)stack_pool_alloc();
-    task_init(&task2, task2_entry, stack2_ptr, TASK_STACK_SIZE_BYTES / 4);
+    uint32_t *sp1 = (uint32_t*)stack_pool_alloc();
+    task_init(&task1, task1_entry, sp1, TASK_STACK_SIZE_BYTES / 4);
 
-    uint32_t *stack3_ptr = (uint32_t*)stack_pool_alloc();
-    task_init(&task3, task3_entry, stack3_ptr, TASK_STACK_SIZE_BYTES / 4);
+    uint32_t *sp2 = (uint32_t*)stack_pool_alloc();
+    task_init(&task2, task2_entry, sp2, TASK_STACK_SIZE_BYTES / 4);
+
+    uint32_t *sp3 = (uint32_t*)stack_pool_alloc();
+    task_init(&task3, task3_entry, sp3, TASK_STACK_SIZE_BYTES / 4);
 
     task_register(&task1);
     task_register(&task2);
     task_register(&task3);
     
-    printf("任务创建完毕，启动调度器...\r\n");
-    
-    // 3. 启动系统
+    printf("系统任务创建完毕，接管 CPU 控制权...\r\n");
     os_start();
     
     while(1) {}

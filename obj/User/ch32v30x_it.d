@@ -27,7 +27,8 @@ User/ch32v30x_it.o: ../User/ch32v30x_it.c ../User/ch32v30x_it.h \
  c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Peripheral/inc/ch32v30x_usart.h \
  c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Peripheral/inc/ch32v30x_wwdg.h \
  c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/User/ch32v30x_it.h \
- c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Peripheral/inc/ch32v30x_misc.h
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Peripheral/inc/ch32v30x_misc.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/timer.h
 
 ../User/ch32v30x_it.h:
 
@@ -88,3 +89,5 @@ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Peripheral/in
 c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/User/ch32v30x_it.h:
 
 c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Peripheral/inc/ch32v30x_misc.h:
+
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/timer.h:

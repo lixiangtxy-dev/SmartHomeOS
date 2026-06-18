@@ -30,6 +30,7 @@ SUBDIRS := \
 Core \
 Debug \
 OS_Core \
+OS_Drivers \
 OS_HAL \
 Peripheral/src \
 Startup \

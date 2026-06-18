@@ -12,6 +12,7 @@ RM := rm -rf
 -include Startup/subdir.mk
 -include Peripheral/src/subdir.mk
 -include OS_HAL/subdir.mk
+-include OS_Drivers/subdir.mk
 -include OS_Core/subdir.mk
 -include Debug/subdir.mk
 -include Core/subdir.mk
