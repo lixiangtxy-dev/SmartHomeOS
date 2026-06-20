@@ -11,9 +11,11 @@
 			"mcu": "CH32V307RCT6",
 			"description": "Website: http://www.wch.cn/products/CH32V307.html?\\nROM(byte): 256K, SRAM(byte): 64K, CHIP PINS: 64, GPIO PORTS: 51.\\nWCH CH32V3 series of mainstream MCUs covers the needs of a large variety of applications in the industrial,medical and consumer markets. High performance with first-class peripherals and low-power,low-voltage operation is paired with a high level of integration at accessible prices with a simple architecture and easy-to-use tools.",
 			"tempratureScope": "CH32V307RCT6{-40℃~85℃}",
+			"artifactType": "executable",
 			"link": "WCH-Link",
 			"peripheral_version": "3.0",
-			"calibrateSupport": false
+			"calibrateSupport": false,
+			"calibrateCommand": ""
 		},
 		"linkedFolders": [],
 		"removedResources": [
@@ -132,7 +134,8 @@
 							"${project}/Peripheral/inc",
 							"${project}/OS_Core",
 							"${project}/OS_Drivers",
-							"${project}/OS_HAL"
+							"${project}/OS_HAL",
+							"${project}/LittleFS"
 						],
 						"include_system_paths": [],
 						"include_files": []
@@ -405,7 +408,7 @@
 			"showDebugOutputTimestamps": true
 		},
 		"reserve": {
-			"PROGRAM_NAME": "obj\\CH32V307RCT.elf",
+			"PROGRAM_NAME": "obj/CH32V307RCT.elf",
 			"PROJECT_ATTR": "CH32V307RCT",
 			"PROJECT_BUILD_CONFIG_AUTO_ATTR": true,
 			"PROJECT_BUILD_CONFIG_ID_ATTR": "",

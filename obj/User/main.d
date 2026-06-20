@@ -35,7 +35,11 @@ User/main.o: ../User/main.c \
  c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/msgqueue.h \
  c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/mutex.h \
  c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/shadow.h \
- c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/timer.h
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/timer.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Drivers/drv_w25q80.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Drivers/fs_port.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/LittleFS/lfs.h \
+ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/LittleFS/lfs_util.h
 
 c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/Debug/debug.h:
 
@@ -110,3 +114,11 @@ c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/mutex
 c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/shadow.h:
 
 c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Core/timer.h:
+
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Drivers/drv_w25q80.h:
+
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/OS_Drivers/fs_port.h:
+
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/LittleFS/lfs.h:
+
+c:/Users/Administrator/Desktop/SmartHome/SmartHome-mcu/CH32V307RCT/LittleFS/lfs_util.h:

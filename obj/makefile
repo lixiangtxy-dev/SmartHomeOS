@@ -14,6 +14,7 @@ RM := rm -rf
 -include OS_HAL/subdir.mk
 -include OS_Drivers/subdir.mk
 -include OS_Core/subdir.mk
+-include LittleFS/subdir.mk
 -include Debug/subdir.mk
 -include Core/subdir.mk
 -include subdir.mk

@@ -29,6 +29,7 @@ CALLGRAPH_DOT := callgraph.dot \
 SUBDIRS := \
 Core \
 Debug \
+LittleFS \
 OS_Core \
 OS_Drivers \
 OS_HAL \
