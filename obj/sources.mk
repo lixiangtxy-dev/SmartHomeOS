@@ -36,3 +36,4 @@ OS_HAL \
 Peripheral/src \
 Startup \
 User \
+cJSON \
